@@ -1,419 +1,381 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Uzbek Ch6 Vocab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK 2 Lesson 4 Interactive App</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            background-color: #f8fafc; /* Fallback */
+            min-height: 100vh;
+        }
+        .zh-text {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
         
-        body { 
-            font-family: 'Nunito', sans-serif; 
-            background-color: #f3f4f6; 
-            overscroll-behavior: none; /* 防止下拉刷新效果 */
-            user-select: none; /* 禁止选中文本 */
-            -webkit-tap-highlight-color: transparent;
+        /* Premium Animated Mesh Gradient Background */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            overflow: hidden;
+        }
+        .ambient-bg::before, .ambient-bg::after, .ambient-bg-3 {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.6;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        .ambient-bg::before {
+            width: 55vw; height: 55vw;
+            background: #c7d2fe; /* Indigo */
+            top: -15%; left: -10%;
+        }
+        .ambient-bg::after {
+            width: 45vw; height: 45vw;
+            background: #ccfbf1; /* Teal/Mint */
+            bottom: -10%; right: -5%;
+            animation-delay: -5s;
+        }
+        .ambient-bg-3 {
+            width: 40vw; height: 40vw;
+            background: #e9d5ff; /* Purple */
+            top: 30%; left: 30%;
+            animation-delay: -10s;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(8%, 12%) scale(1.15); }
         }
 
-        /* 3D Flip Card */
-        .perspective { perspective: 1000px; }
-        .card-inner {
-            position: relative; width: 100%; height: 100%;
-            text-align: center; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
-            transform-style: preserve-3d;
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
         }
-        .card-inner.is-flipped { transform: rotateY(180deg); }
-        .card-face {
-            position: absolute; width: 100%; height: 100%;
-            backface-visibility: hidden;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+
+        /* Flip Card Styles */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .flashcard-inner { transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
+
+        /* Gradient Text */
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #4f46e5, #0d9488);
         }
-        .card-front { background: white; color: #1f2937; z-index: 2; }
-        .card-back { background: #2563eb; color: white; transform: rotateY(180deg); z-index: 1; }
 
-        /* Game Grid - Revised for Single Screen & Compact Cards */
-        #game-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 改为4列，使卡片更小更紧凑 */
-            gap: 0.5rem;
-            width: 100%;
-            max-width: 400px; /* 限制最大宽度，防止在大屏上太散 */
-            margin: 0 auto;
+        /* Smooth fade transition for tabs */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
         }
-        .game-card { 
-            aspect-ratio: 1; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;
-            border-radius: 0.5rem; /* 圆角稍微减小 */
-            font-size: 0.75rem; /* 字体调小 */
-            line-height: 1.1;
-            padding: 0.25rem;
-            text-align: center;
-            word-break: break-word;
-            transition: transform 0.1s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            background-color: white;
-            border: 1px solid #e5e7eb;
+        .tab-content.active {
+            display: block;
         }
-        .game-card:active { transform: scale(0.95); }
-        .game-card.selected { background-color: #fbbf24; border: 2px solid #d97706; transform: scale(1.05); z-index: 10; font-weight: 800;}
-        .game-card.matched { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        .game-card.wrong { background-color: #fee2e2; border: 2px solid #ef4444; animation: shake 0.4s; }
-
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-
-        /* Navigation */
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-size: 0.75rem; }
-        .nav-item.active { color: #2563eb; font-weight: bold; }
-        .nav-item svg { width: 1.5rem; height: 1.5rem; margin-bottom: 2px; }
-
-        /* Hide Scrollbar */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col overflow-hidden fixed bg-gray-50">
+<body class="flex flex-col bg-transparent">
 
-    <!-- Top Header -->
-    <header class="h-auto min-h-[3.5rem] bg-blue-600 shadow-md flex items-center justify-between z-20 px-4 py-2 shrink-0 relative">
-        <div class="flex flex-col">
-            <h1 class="text-base font-bold text-white tracking-tight">Chapter6: kundalik ishlar</h1>
-            <p class="text-[10px] text-blue-100 scale-95 origin-top-left mt-0.5">Design by Dilfuza (telegram@diffila) 小红书号：410803917</p>
+    <!-- Ambient Animated Background -->
+    <div class="ambient-bg">
+        <div class="ambient-bg-3"></div>
+    </div>
+
+    <!-- Premium Header -->
+    <header class="glass-panel sticky top-0 z-50 rounded-b-3xl mb-8 border-t-0 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2 zh-text tracking-wide drop-shadow-sm">
+                你穿红色的很好看
+            </h1>
+            <h2 class="text-xl md:text-2xl font-bold text-center text-gradient pb-5 border-b border-gray-200/50">
+                Dilfuza Kāng lǎo shī bilan xitoy tilini o'rganmiz
+            </h2>
+            
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap justify-center gap-3 mt-6" id="nav-tabs">
+                <button onclick="switchTab('flashcards')" class="tab-btn active px-6 py-2.5 rounded-full font-semibold transition-all duration-300 bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] transform hover:-translate-y-0.5 border border-transparent" data-tab="flashcards">So'zlar</button>
+                <button onclick="switchTab('vocab-quiz')" class="tab-btn px-6 py-2.5 rounded-full font-medium transition-all duration-300 bg-white/40 backdrop-blur-md text-gray-600 hover:bg-white/80 hover:text-indigo-600 shadow-sm border border-white/60 hover:-translate-y-0.5" data-tab="vocab-quiz">Lug'at testi</button>
+                <button onclick="switchTab('dialogues')" class="tab-btn px-6 py-2.5 rounded-full font-medium transition-all duration-300 bg-white/40 backdrop-blur-md text-gray-600 hover:bg-white/80 hover:text-indigo-600 shadow-sm border border-white/60 hover:-translate-y-0.5" data-tab="dialogues">Muloqot</button>
+                <button onclick="switchTab('grammar')" class="tab-btn px-6 py-2.5 rounded-full font-medium transition-all duration-300 bg-white/40 backdrop-blur-md text-gray-600 hover:bg-white/80 hover:text-indigo-600 shadow-sm border border-white/60 hover:-translate-y-0.5" data-tab="grammar">Grammatika</button>
+                <button onclick="switchTab('grammar-quiz')" class="tab-btn px-6 py-2.5 rounded-full font-medium transition-all duration-300 bg-white/40 backdrop-blur-md text-gray-600 hover:bg-white/80 hover:text-indigo-600 shadow-sm border border-white/60 hover:-translate-y-0.5" data-tab="grammar-quiz">Grammatika testi</button>
+                <button onclick="switchTab('fill-blanks')" class="tab-btn px-6 py-2.5 rounded-full font-medium transition-all duration-300 bg-white/40 backdrop-blur-md text-gray-600 hover:bg-white/80 hover:text-indigo-600 shadow-sm border border-white/60 hover:-translate-y-0.5" data-tab="fill-blanks">So'zlarni to'ldirish</button>
+            </nav>
         </div>
-        <div id="header-score" class="text-xs font-bold text-blue-600 hidden bg-white px-2 py-1 rounded-full absolute right-4 top-1/2 -translate-y-1/2 shadow-sm">Score: 0</div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 relative w-full overflow-hidden">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full relative z-10 mb-16">
         
-        <!-- VIEW 1: FLASHCARDS -->
-        <div id="view-flashcards" class="w-full h-full flex flex-col items-center justify-start pt-4 pb-20 px-4">
-            
-            <!-- Category Filter (Scrollable) -->
-            <div class="w-full overflow-x-auto no-scrollbar mb-4 shrink-0">
-                <div class="flex space-x-2 px-1">
-                    <button onclick="filterCards('all')" class="cat-btn bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm">All</button>
-                    <button onclick="filterCards('verb')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm border">动词 Verbs</button>
-                    <button onclick="filterCards('noun')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm border">名词 Nouns</button>
-                    <button onclick="filterCards('time')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm border">时间 Time</button>
+        <!-- 1. Flashcards (生词闪卡) -->
+        <section id="flashcards" class="tab-content active">
+            <div class="text-center mb-8">
+                <h3 class="text-3xl font-extrabold text-gray-800 drop-shadow-sm">Yangi so'zlar</h3>
+                <p class="text-gray-500 mt-2 font-medium">Karta ustiga bosing (ag'darish uchun)</p>
+            </div>
+            <!-- Grid container for flashcards -->
+            <div id="flashcard-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </section>
+
+        <!-- 2. Vocabulary Quiz (生词测试) -->
+        <section id="vocab-quiz" class="tab-content max-w-3xl mx-auto">
+            <div class="glass-panel rounded-3xl p-6 md:p-10">
+                <div class="flex justify-between items-center mb-8 border-b border-gray-200/50 pb-4">
+                    <h3 class="text-3xl font-extrabold text-gray-800">Lug'at testi</h3>
+                    <span id="vocab-score" class="text-xl font-bold text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full shadow-sm border border-indigo-100">0 / 0</span>
+                </div>
+                <div id="vocab-quiz-container">
+                    <!-- Populated by JS -->
                 </div>
             </div>
+        </section>
 
-            <!-- Card -->
-            <div class="w-full max-w-sm aspect-[4/5] perspective relative mb-6">
-                <div class="card-inner bg-white" id="flashcard" onclick="flipCard()">
-                    <!-- Front -->
-                    <div class="card-face card-front border border-gray-100">
-                        <div class="absolute top-4 right-4 text-xs font-bold text-gray-300 bg-gray-50 px-2 py-1 rounded" id="card-cat">VERB</div>
-                        <div class="text-blue-500 w-24 h-24 mb-6" id="card-icon"></div>
-                        <h2 class="text-4xl font-bold text-gray-800 mb-2 text-center px-2" id="card-uzbek">...</h2>
-                        <p class="text-gray-400 text-xs mt-4 animate-pulse">点击翻转 / Tap to flip</p>
-                    </div>
-                    <!-- Back -->
-                    <div class="card-face card-back bg-gradient-to-br from-blue-500 to-blue-600">
-                        <h3 class="text-2xl font-bold mb-1" id="card-chinese">...</h3>
-                        <div class="w-8 h-0.5 bg-white/30 my-2 rounded"></div>
-                        <h3 class="text-xl font-semibold text-blue-100 italic mb-6" id="card-english">...</h3>
-                        <div class="absolute bottom-6 opacity-50 w-8 h-8" id="card-icon-sm"></div>
-                    </div>
+        <!-- 3. Dialogues (对话内容) -->
+        <section id="dialogues" class="tab-content max-w-4xl mx-auto">
+            <div class="text-center mb-8">
+                <h3 class="text-3xl font-extrabold text-gray-800 drop-shadow-sm">Muloqot matnlari</h3>
+            </div>
+            <div id="dialogues-container" class="space-y-8">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- 4. Grammar (语法解释) -->
+        <section id="grammar" class="tab-content max-w-4xl mx-auto">
+             <div class="text-center mb-8">
+                <h3 class="text-3xl font-extrabold text-gray-800 drop-shadow-sm">Grammatika qoidalari</h3>
+            </div>
+            <div id="grammar-container" class="space-y-8">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- 5. Grammar Quiz (语法测试) -->
+        <section id="grammar-quiz" class="tab-content max-w-3xl mx-auto">
+            <div class="glass-panel rounded-3xl p-6 md:p-10">
+                 <div class="flex justify-between items-center mb-8 border-b border-gray-200/50 pb-4">
+                    <h3 class="text-3xl font-extrabold text-gray-800">Grammatika testi</h3>
+                    <span id="grammar-score" class="text-xl font-bold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full shadow-sm border border-teal-100">0 / 0</span>
+                </div>
+                <div id="grammar-quiz-container">
+                    <!-- Populated by JS -->
                 </div>
             </div>
+        </section>
 
-            <!-- Controls -->
-            <div class="flex items-center justify-between w-full max-w-sm px-2 shrink-0">
-                <button onclick="prevCard()" class="p-4 rounded-full bg-white shadow text-gray-500 active:bg-gray-100">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-                </button>
-                <div class="text-xs font-mono text-gray-400" id="card-counter">1/100</div>
-                <button onclick="speakWord()" class="p-5 rounded-full bg-blue-600 shadow-lg shadow-blue-200 text-white active:scale-95 transition transform">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                </button>
-                <button onclick="nextCard()" class="p-4 rounded-full bg-white shadow text-gray-500 active:bg-gray-100">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- VIEW 2: GAME (Optimized for One Screen) -->
-        <div id="view-game" class="w-full h-full hidden flex flex-col px-4 pt-4 pb-20">
-            <!-- Game Header -->
-            <div class="flex justify-between items-end mb-4 shrink-0">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">配对消除</h2>
-                    <p class="text-xs text-gray-500">点击单词和对应中文</p>
+        <!-- 6. Fill in the Blanks (词语填空) -->
+        <section id="fill-blanks" class="tab-content max-w-4xl mx-auto">
+            <div class="glass-panel rounded-3xl p-6 md:p-10">
+                <div class="flex justify-between items-center mb-8 border-b border-gray-200/50 pb-4">
+                    <h3 class="text-3xl font-extrabold text-gray-800">So'zlarni o'z o'rniga qo'ying</h3>
+                    <span id="fill-score" class="text-xl font-bold text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full shadow-sm border border-indigo-100">0 / 0</span>
                 </div>
-                <button onclick="initGame()" class="text-xs bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold shadow-sm active:scale-95 transition">
-                    <span class="mr-1">↻</span> 刷新
-                </button>
-            </div>
-            
-            <!-- Game Board Area (Centered Flex) -->
-            <div class="flex-1 flex flex-col justify-center w-full">
-                <div id="game-grid">
-                    <!-- Javascript will populate this -->
-                </div>
-            </div>
-        </div>
-
-        <!-- VIEW 3: QUIZ -->
-        <div id="view-quiz" class="w-full h-full hidden flex flex-col items-center justify-center pt-4 pb-20 px-6">
-            <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 relative border border-gray-100">
-                <div class="absolute top-0 left-0 h-1.5 bg-green-500 rounded-tl-2xl rounded-tr-2xl transition-all duration-300" id="quiz-progress" style="width: 10%"></div>
                 
-                <div class="text-center mb-6 mt-2">
-                    <div id="quiz-icon" class="w-16 h-16 text-blue-500 mx-auto mb-3"></div>
-                    <h2 class="text-2xl font-bold text-gray-800 leading-tight" id="quiz-question">...</h2>
-                    <button onclick="speakWord(currentQuizItem.u)" class="text-blue-400 text-xs mt-3 flex items-center justify-center mx-auto gap-1 bg-blue-50 px-3 py-1 rounded-full">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg> 
-                        听发音
-                    </button>
+                <!-- Word Bank -->
+                <div class="mb-10 p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white shadow-inner">
+                    <p class="text-sm text-indigo-800 mb-4 font-bold uppercase tracking-wider flex items-center gap-2"><i class="fas fa-layer-group"></i> So'zlar banki:</p>
+                    <div id="word-bank" class="flex flex-wrap gap-2.5">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
 
-                <div id="quiz-options" class="flex flex-col gap-2.5">
-                    <!-- Options -->
+                <div id="fill-blanks-container" class="space-y-5">
+                    <!-- Populated by JS -->
                 </div>
-
-                <div id="quiz-feedback" class="mt-4 text-center font-bold text-sm hidden py-2 rounded"></div>
-                <button onclick="nextQuiz()" id="quiz-next-btn" class="mt-4 w-full bg-blue-600 active:bg-blue-700 text-white py-3 rounded-xl shadow font-bold hidden transition">下一题 Next</button>
             </div>
-        </div>
+        </section>
 
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="h-16 bg-white border-t border-gray-100 flex justify-around items-center shrink-0 z-30 pb-safe shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
-        <div onclick="switchView('flashcards')" class="nav-item active" id="nav-flashcards">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-            <span class="text-[10px]">背单词</span>
+    <footer class="bg-gray-900/90 backdrop-blur-xl text-gray-300 py-8 mt-auto border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="font-bold text-xl text-white tracking-wider mb-2">HSK 2 NEW3.0 - Lesson 4</p>
+            <p class="text-sm text-gray-400">© 2026 Dilfuza Kāng lǎo shī (telegram@diffila)</p>
         </div>
-        <div onclick="switchView('game')" class="nav-item" id="nav-game">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
-            <span class="text-[10px]">连连看</span>
-        </div>
-        <div onclick="switchView('quiz')" class="nav-item" id="nav-quiz">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="text-[10px]">测试</span>
-        </div>
-    </nav>
+    </footer>
 
     <script>
-        // --- AUDIO SYSTEM ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // --- DATA DEFINITION ---
 
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
+        const vocabulary = [
+            { hanzi: "过", pinyin: "guo", uz: "O'tgan zamon holat qo'shimchasi", ru: "суффикс прошедшего времени", en: "aspect particle (past action)" },
+            { hanzi: "商场", pinyin: "shāngchǎng", uz: "Savdo markazi", ru: "торговый центр", en: "department store" },
+            { hanzi: "进去", pinyin: "jìnqu", uz: "Ichkariga kirmoq", ru: "входить", en: "go/get in" },
+            { hanzi: "条", pinyin: "tiáo", uz: "Uzun narsalar uchun hisob so'zi", ru: "сч. слово для длинных предметов", en: "measure word for long things" },
+            { hanzi: "裤子", pinyin: "kùzi", uz: "Shim", ru: "брюки", en: "trousers; pants" },
+            { hanzi: "白色", pinyin: "báisè", uz: "Oq rang", ru: "белый цвет", en: "white" },
+            { hanzi: "因为", pinyin: "yīnwèi", uz: "Chunki", ru: "потому что", en: "because" },
+            { hanzi: "试", pinyin: "shì", uz: "Sinab ko'rmoq / Kiydirib ko'rmoq", ru: "пробовать, примерять", en: "try" },
+            { hanzi: "红色", pinyin: "hóngsè", uz: "Qizil rang", ru: "красный цвет", en: "red" },
+            { hanzi: "所以", pinyin: "suǒyǐ", uz: "Shuning uchun", ru: "поэтому", en: "so; therefore" },
+            { hanzi: "书包", pinyin: "shūbāo", uz: "Maktab sumkasi", ru: "школьный рюкзак", en: "schoolbag" },
+            { hanzi: "过去", pinyin: "guòqù", uz: "O'tib ketmoq / U yerga bormoq", ru: "проходить, переходить", en: "pass (by); go over" },
+            { hanzi: "绿色", pinyin: "lǜsè", uz: "Yashil rang", ru: "зеленый цвет", en: "green" },
+            { hanzi: "黑色", pinyin: "hēisè", uz: "Qora rang", ru: "черный цвет", en: "black" },
+            { hanzi: "更", pinyin: "gèng", uz: "Yana-da / Ko'proq", ru: "еще более", en: "more; still/even more" },
+            { hanzi: "颜色", pinyin: "yánsè", uz: "Rang", ru: "цвет", en: "color" }
+        ];
 
-            if (type === 'correct') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-                osc.start(now);
-                osc.stop(now + 0.6);
+        const dialogues = [
+            {
+                title: "1-Matn: Savdo markazi eshigi oldida (在商场门口)",
+                lines: [
+                    { speaker: "刘小雪", hanzi: "妈妈，我们来过这家商场吗？", pinyin: "Māma, wǒmen láiguo zhè jiā shāngchǎng ma?", uz: "Oyi, biz bu savdo markaziga kelganmizmi?", ru: "Мама, мы бывали в этом торговом центре?", en: "Mom, have we been to this shopping mall before?" },
+                    { speaker: "王一雪", hanzi: "没来过，这是新开的。", pinyin: "Méi láiguo, zhè shì xīn kāi de.", uz: "Kelmaganmiz, bu yangi ochilgan.", ru: "Не бывали, он недавно открылся.", en: "No, it just opened recently." },
+                    { speaker: "刘小雪", hanzi: "我们进去看看吧。", pinyin: "Wǒmen jìnqu kànkan ba.", uz: "Keling, ichkariga kirib ko'ramiz.", ru: "Давай зайдем посмотрим.", en: "Let's go inside and have a look." },
+                    { speaker: "王一雪", hanzi: "好啊！你想买点儿什么？", pinyin: "Hǎo a! Nǐ xiǎng mǎi diǎnr shénme?", uz: "Yaxshi! Nima sotib olmoqchisiz?", ru: "Хорошо! Что ты хочешь купить?", en: "Sure! What do you want to buy?" },
+                    { speaker: "刘小雪", hanzi: "我想买条裤子。", pinyin: "Wǒ xiǎng mǎi tiáo kùzi.", uz: "Men shim sotib olmoqchiman.", ru: "Я хочу купить брюки.", en: "I want to buy a pair of pants." },
+                    { speaker: "王一雪", hanzi: "没问题。", pinyin: "Méi wèntí.", uz: "Muammo yo'q.", ru: "Без проблем.", en: "No problem." }
+                ]
+            },
+            {
+                title: "2-Matn: Savdo markazida kiyim tanlash (在商场，看衣服)",
+                lines: [
+                    { speaker: "刘小雪", hanzi: "妈妈，我想买这条白色的裤子。", pinyin: "Māma, wǒ xiǎng mǎi zhè tiáo báisè de kùzi.", uz: "Oyi, men bu oq shimni sotib olmoqchiman.", ru: "Мама, я хочу купить эти белые брюки.", en: "Mom, I want to buy this pair of white pants." },
+                    { speaker: "王一雪", hanzi: "你有很多白色的衣服，为什么还买白色的？", pinyin: "Nǐ yǒu hěn duō báisè de yīfu, wèi shénme hái mǎi báisè de?", uz: "Senda juda ko'p oq kiyimlar bor, nega yana oq ranglisini olyapsan?", ru: "У тебя много белой одежды, почему ты опять покупаешь белое?", en: "You already have lots of white clothes. Why do you want to buy something white again?" },
+                    { speaker: "刘小雪", hanzi: "因为我喜欢白色啊！", pinyin: "Yīnwèi wǒ xǐhuan báisè a!", uz: "Chunki men oq rangni yaxshi ko'raman!", ru: "Потому что мне нравится белый цвет!", en: "Because I like white!" },
+                    { speaker: "王一雪", hanzi: "我觉得这条白色的不太好看，你试试那条红色的吧。", pinyin: "Wǒ juéde zhè tiáo báisè de bú tài hǎokàn, nǐ shìshi nà tiáo hóngsè de ba.", uz: "Menimcha, bu oq unchalik chiroyli emas, anavi qizilini sinab ko'r.", ru: "Я думаю, эти белые не очень хорошо смотрятся, примерь те красные.", en: "I don't think this white one looks very good. Why don't you try that red one instead?" },
+                    { speaker: "刘小雪", hanzi: "我没穿过红色的，红色的好看吗？", pinyin: "Wǒ méi chuānguo hóngsè de, hóngsè de hǎokàn ma?", uz: "Men qizil kiymaganman, qizil chiroylimi?", ru: "Я никогда не носила красное, красное хорошо смотрится?", en: "I've never worn red before. Do you think red looks good on me?" },
+                    { speaker: "王一雪", hanzi: "就是因为没穿过，所以要试试啊！", pinyin: "Jiù shì yīnwèi méi chuānguo, suǒyǐ yào shìshi a!", uz: "Aynan kiymaganingiz uchun sinab ko'rishingiz kerak-da!", ru: "Именно потому, что не носила, поэтому и нужно примерить!", en: "That's exactly why you should give it a try!" }
+                ]
+            },
+            {
+                title: "3-Matn: Savdo markazida sumka tanlash (在商场，看书包)",
+                lines: [
+                    { speaker: "刘小雪", hanzi: "妈妈，我想买个新书包。", pinyin: "Māma, wǒ xiǎng mǎi gè xīn shūbāo.", uz: "Oyi, men yangi maktab sumkasini sotib olmoqchiman.", ru: "Мама, я хочу купить новый школьный рюкзак.", en: "Mom, I want to buy a new schoolbag." },
+                    { speaker: "王一雪", hanzi: "好，那边卖书包，我们过去看看吧。", pinyin: "Hǎo, nàbian mài shūbāo, wǒmen guòqù kànkan ba.", uz: "Yaxshi, u yerda maktab sumkalari sotilyapti, o'sha yerga borib ko'ramiz.", ru: "Хорошо, там продаются рюкзаки, давай перейдем туда и посмотрим.", en: "Okay. They're selling schoolbags over there. Let's go and take a look." },
+                    { speaker: "刘小雪", hanzi: "这么多漂亮的书包！", pinyin: "Zhème duō piàoliang de shūbāo!", uz: "Shuncha chiroyli maktab sumkalari!", ru: "Так много красивых рюкзаков!", en: "There are so many beautiful ones!" },
+                    { speaker: "王一雪", hanzi: "红色的、绿色的、黑色的，你想买哪个？", pinyin: "Hóngsè de, lǜsè de, hēisè de, nǐ xiǎng mǎi nǎge?", uz: "Qizil, yashil, qora, qaysi birini sotib olmoqchisiz?", ru: "Красные, зеленые, черные, какой ты хочешь купить?", en: "Red ones, green ones, black ones - which one do you like?" },
+                    { speaker: "刘小雪", hanzi: "绿色的吧。", pinyin: "Lǜsè de ba.", uz: "Yashilini.", ru: "Зеленый.", en: "The green one." },
+                    { speaker: "王一雪", hanzi: "不错，我也觉得绿色的更好看。", pinyin: "Búcuò, wǒ yě juéde lǜsè de gèng hǎokàn.", uz: "Yomon emas, menimcha ham yashil chiroyliroq.", ru: "Неплохо, я тоже думаю, что зеленый выглядит лучше.", en: "Not bad. I think the green one looks better too." }
+                ]
+            },
+            {
+                title: "4-Matn: Monolog kundalik (在房间，写日记)",
+                lines: [
+                    { speaker: "刘小雪", hanzi: "我和妈妈去了一家商场。因为是新开的，所以这几天东西很便宜。商场里的衣服颜色很多。我没穿过红色的裤子，妈妈让我试了试，我觉得我穿红色的也很好看。", pinyin: "Wǒ hé māma qùle yì jiā shāngchǎng. Yīnwèi shì xīn kāi de, suǒyǐ zhè jǐ tiān dōngxi hěn piányi. Shāngchǎng lǐ de yīfu yánsè hěn duō. Wǒ méi chuānguo hóngsè de kùzi, māma ràng wǒ shìle shì, wǒ juéde wǒ chuān hóngsè de yě hěn hǎokàn.", uz: "Men oyim bilan savdo markaziga bordim. U yangi ochilgani uchun bu kunlarda narsalar juda arzon. Savdo markazidagi kiyimlarning ranglari ko'p. Men qizil shim kiymaganman, oyim uni sinab ko'rishimni aytdi, menimcha qizil rangni kiyish ham menga juda yarashadi.", ru: "Мы с мамой пошли в торговый центр. Так как он недавно открылся, в эти дни вещи очень дешевые. В торговом центре много одежды разных цветов. Я никогда не носила красные брюки, мама предложила мне примерить их, и мне кажется, что в красном я тоже выгляжу очень хорошо.", en: "I went to a shopping mall with my mom. Since the mall had just opened, the prices were quite affordable these days. The clothes there came in many different colors. I had never worn red pants before, and my mom encouraged me to give them a try. I thought I looked pretty good in red too." }
+                ]
+            }
+        ];
+
+        const grammarPoints = [
+            {
+                title: "1. 动态助词“过” Aspect Particle '过'",
+                hanzi: "用在动词后面，表示动作曾在过去发生，但未持续到现在。基本结构：主语 + 动词 + 过 + 宾语。否定形式是在动词前面加“没(有)”。",
+                uz: "\"过\" fe'ldan keyin kelib, harakatning o'tmishda sodir bo'lganini va hozirgi paytda davom etmayotganini bildiradi. Qoliplar: Ega + Fe'l + 过 + To'ldiruvchi. Inkor shakli: Ega + 没(有) + Fe'l + 过 + To'ldiruvchi.",
+                ru: "Используется после глагола для указания на то, что действие произошло в прошлом, но не продолжается в настоящем. Базовая структура: Подлежащее + Глагол + 过 + Дополнение. Отрицательная форма образуется добавлением «没(有)» перед глаголом.",
+                en: "Used after a verb to indicate that an action occurred in the past but has not continued to the present. Basic structure: Subject+Verb+过+Object. The negative form is constructed by adding '没(有)' before the verb.",
+                examples: [
+                    { hanzi: "她去过中国。", pinyin: "Tā qùguo Zhōngguó.", uz: "U Xitoyga borgan." },
+                    { hanzi: "我吃过饺子，很好吃。", pinyin: "Wǒ chīguo jiǎozi, hěn hǎochī.", uz: "Men chuchvara yeganman, juda mazali." },
+                    { hanzi: "她没去过中国。", pinyin: "Tā méi qùguo Zhōngguó.", uz: "U Xitoyga bormagan." }
+                ]
+            },
+            {
+                title: "2. 因果复句“因为……，所以……” Causal Complex Sentence",
+                hanzi: "构成因果关系复句。“因为”和“所以”可以成对使用，也可以只用其中的一个。",
+                uz: "\"因为……所以……\" sabab-oqibat munosabatini ifodalaydi. \"因为\" (chunki) va \"所以\" (shuning uchun) birgalikda yoki alohida ishlatilishi mumkin.",
+                ru: "Образует сложное предложение, выражающее причину и следствие. «因为» (потому что) и «所以» (поэтому) могут использоваться как вместе, так и по отдельности.",
+                en: "Forms a complex sentence expressing cause and effect. '因为' (because) and '所以' (therefore) can be used either together as a pair or individually.",
+                examples: [
+                    { hanzi: "就是因为没穿过，所以要试试啊！", pinyin: "Jiù shì yīnwèi méi chuānguo, suǒyǐ yào shìshi a!", uz: "Aynan kiymaganingiz uchun, shuning uchun sinab ko'rishingiz kerak-da!" },
+                    { hanzi: "因为我生病了，今天没去上班。", pinyin: "Yīnwèi wǒ shēngbìng le, jīntiān méi qù shàngbān.", uz: "Chunki men kasal bo'ldim, bugun ishga bormadim." },
+                    { hanzi: "我没去过他家，所以让他来车站接我。", pinyin: "Wǒ méi qùguo tā jiā, suǒyǐ ràng tā lái chēzhàn jiē wǒ.", uz: "Men uning uyiga bormaganman, shuning uchun mendan uni bekatda kutib olishini so'radim." }
+                ]
+            },
+            {
+                title: "3. “的”字短语 “的” Phrase",
+                hanzi: "用在名词、代词、动词、形容词等后面，组成“的”字短语，相当于名词性短语。",
+                uz: "\"的\" struktura qo'shimchasi ot, olmosh, fe'l, sifatlardan keyin kelib, otlashgan iborani hosil qiladi. U xuddi ot kabi vazifani bajaradi.",
+                ru: "Используется после существительных, местоимений, глаголов, прилагательных и т.д. для образования фразы с «的», которая функционирует как именная группа.",
+                en: "Used after nouns, pronouns, verbs, adjectives, etc., to form a '的' phrase, which functions as a noun phrase.",
+                examples: [
+                    { hanzi: "红色的、绿色的、黑色的，你想买哪个？(=红色的书包)", pinyin: "Hóngsè de, lǜsè de, hēisè de, nǐ xiǎng mǎi nǎge? (=hóngsè de shūbāo)", uz: "Qizil, yashil, qora, qaysi birini sotib olmoqchisiz? (=qizil maktab sumkasi)" },
+                    { hanzi: "这件衣服太贵了，还是买那件便宜的吧。(=便宜的衣服)", pinyin: "Zhè jiàn yīfu tài guì le, háishì mǎi nà jiàn piányi de ba. (=piányi de yīfu)", uz: "Bu kiyim juda qimmat, yaxshisi anavi arzonini sotib oling. (=arzon kiyim)" }
+                ]
+            }
+        ];
+
+        const grammarQuizData = [
+            { q: "我没去____中国。", options: ["的", "过", "了", "着"], ans: 1 },
+            { q: "____天气不好，所以我没去公园。", options: ["因为", "所以", "还是", "或者"], ans: 0 },
+            { q: "这本书是老师买____。", options: ["过", "了", "的", "着"], ans: 2 },
+            { q: "那个红色的书包很____。", options: ["好看的", "好看过", "好看了", "好看"], ans: 3 },
+            { q: "他吃____北京烤鸭没有？", options: ["了", "过", "的", "吗"], ans: 1 },
+            { q: "因为今天下雨，____我们在家看电视。", options: ["但是", "因为", "所以", "可是"], ans: 2 },
+            { q: "这件白色的不好看，你试试那件黑色的____。", options: ["吧", "过", "的", "了"], ans: 0 },
+            { q: "你去____这家新开的商场吗？", options: ["没", "了", "过", "的"], ans: 2 },
+            { q: "昨天我没去____超市。", options: ["过", "的", "了", "吗"], ans: 0 },
+            { q: "这些苹果是昨天买____。", options: ["过", "了", "的", "吗"], ans: 2 },
+            { q: "他汉语说得很好，____他是中国人。", options: ["所以", "因为", "可是", "虽然"], ans: 1 },
+            { q: "妈妈做的菜比饭店做____好吃。", options: ["过", "了", "的", "吗"], ans: 2 },
+            { q: "我没穿____这么好看的衣服。", options: ["了", "过", "的", "着"], ans: 1 },
+            { q: "____他不舒服，所以去医院了。", options: ["因为", "虽然", "所以", "但是"], ans: 0 },
+            { q: "这里有红色的和绿色的，你要哪个____？", options: ["过", "了", "吗", "的"], ans: 3 }
+        ];
+
+        const fillBlanksData = [
+            { sentence: "这家新开的 [blank] 很大。", answer: "商场" },
+            { sentence: "我想买一 [blank] 裤子。", answer: "条" },
+            { sentence: "外面太冷了，快 [blank] 吧。", answer: "进去" },
+            { sentence: "我喜欢红色，你喜欢什么 [blank]？", answer: "颜色" },
+            { sentence: "那个 [blank] 的书包是我的。", answer: "黑色" }, 
+            { sentence: "[blank] 下雨了，所以我没去。", answer: "因为" },
+            { sentence: "我没去 [blank] 北京。", answer: "过" },
+            { sentence: "你穿这件衣服 [blank] 好看。", answer: "更" },
+            { sentence: "你 [blank] 一下这件白色的衣服吧。", answer: "试" },
+            { sentence: "妈妈给我买了一个 [blank] 色的书包。", answer: "绿" }, 
+            { sentence: "这件衣服太贵了，[blank] 我没买。", answer: "所以" },
+            { sentence: "那个红 [blank] 的苹果很好吃。", answer: "色" },
+            { sentence: "我的手机是 [blank] 色的。", answer: "白" },
+            { sentence: "时间 [blank] 得很慢。", answer: "过去" }
+        ];
+        
+        const wordBankList = ["商场", "条", "进去", "颜色", "黑色", "因为", "过", "更", "试", "绿色", "所以", "红色", "白色", "过去", "裤子", "书包"];
+
+        
+        // --- UTILS & AUDIO ---
+        function playAudio(text, event) {
+            if(event) event.stopPropagation();
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
             } else {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-                gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
+                console.warn("Speech Synthesis not supported in this browser.");
             }
         }
 
-        // --- NEW: Natural Voice Logic ---
-        function speakWord(text) {
-            const word = text || cardList[cardIndex].u;
-            
-            const onlineUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=uz&client=tw-ob&q=${encodeURIComponent(word)}`;
-            const audio = new Audio(onlineUrl);
-            
-            audio.play().catch(e => {
-                if ('speechSynthesis' in window) {
-                    const u = new SpeechSynthesisUtterance(word);
-                    const voices = window.speechSynthesis.getVoices();
-                    const tr = voices.find(v => v.lang.includes('tr'));
-                    if(tr) u.voice = tr;
-                    u.rate = 0.85;
-                    window.speechSynthesis.speak(u);
-                }
-            });
-        }
-
-        // --- DATA ---
-        // Icons
-        const SVG = {
-            verb: '<path d="M13 10V3L4 14h7v7l9-11h-7z" />',
-            time: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />',
-            place: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />',
-            noun: '<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />',
-            food: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />',
-            person: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />'
-        };
-
-        // Full Vocabulary with English
-        const rawVocab = [
-            { u: "asli", c: "原来", e: "original / by origin", t: "adj" },
-            { u: "ayniqsa", c: "特别", e: "especially", t: "adj" },
-            { u: "aytgancha", c: "顺便说一下", e: "by the way", t: "adj" },
-            { u: "ba'zan", c: "有时", e: "sometimes", t: "time" },
-            { u: "bank", c: "银行", e: "bank", t: "place" },
-            { u: "barvaqt", c: "早", e: "early", t: "time" },
-            { u: "bayram", c: "节日", e: "holiday", t: "noun" },
-            { u: "bemalol", c: "流利地/轻松地", e: "freely / fluently", t: "adj" },
-            { u: "bilmoq", c: "知道/懂", e: "to know", t: "verb" },
-            { u: "bir haftadan keyin", c: "一周后", e: "after one week", t: "time" },
-            { u: "bo'lib ishlamoq", c: "作为...工作", e: "to work as", t: "verb" },
-            { u: "bormoq", c: "去", e: "to go", t: "verb" },
-            { u: "bozor", c: "市场", e: "bazaar / market", t: "place" },
-            { u: "dars qilmoq", c: "学习/做功课", e: "to do homework / study", t: "verb" },
-            { u: "davom ettirmoq", c: "继续", e: "to continue", t: "verb" },
-            { u: "doim", c: "总是", e: "always", t: "time" },
-            { u: "ertaga", c: "明天", e: "tomorrow", t: "time" },
-            { u: "ertalab", c: "早上", e: "in the morning", t: "time" },
-            { u: "fan", c: "学科", e: "subject / science", t: "noun" },
-            { u: "hafta", c: "周", e: "week", t: "time" },
-            { u: "har kuni", c: "每天", e: "every day", t: "time" },
-            { u: "har xil", c: "各种各样", e: "various / different", t: "adj" },
-            { u: "hech kim", c: "没有人", e: "nobody", t: "person" },
-            { u: "hech qachon", c: "从不", e: "never", t: "time" },
-            { u: "hech qayer", c: "无处", e: "nowhere", t: "place" },
-            { u: "hovli", c: "庭院/院子", e: "yard / courtyard", t: "place" },
-            { u: "hozir", c: "现在", e: "now", t: "time" },
-            { u: "ichmoq", c: "喝", e: "to drink", t: "verb" },
-            { u: "indinga", c: "后天", e: "day after tomorrow", t: "time" },
-            { u: "ish", c: "工作 (名词)", e: "work / job", t: "noun" },
-            { u: "ishlamoq", c: "工作 (动词)", e: "to work", t: "verb" },
-            { u: "kamdan-kam", c: "很少", e: "seldom / rarely", t: "time" },
-            { u: "kech", c: "晚/迟", e: "late", t: "time" },
-            { u: "kechki ovqat", c: "晚餐", e: "dinner", t: "food" },
-            { u: "kechqurun", c: "晚上", e: "in the evening", t: "time" },
-            { u: "kelajakda", c: "未来", e: "in the future", t: "time" },
-            { u: "kelasi yil", c: "明年", e: "next year", t: "time" },
-            { u: "kelmoq", c: "来", e: "to come", t: "verb" },
-            { u: "keng", c: "宽/广阔", e: "wide / spacious", t: "adj" },
-            { u: "ketmoq", c: "离开/走", e: "to leave / go away", t: "verb" },
-            { u: "keyin", c: "之后", e: "after / then", t: "time" },
-            { u: "kino", c: "电影", e: "cinema / movie", t: "noun" },
-            { u: "ko'p", c: "多", e: "many / much", t: "adj" },
-            { u: "ko'rmoq", c: "看/见", e: "to see / watch", t: "verb" },
-            { u: "kofe/qahva", c: "咖啡", e: "coffee", t: "food" },
-            { u: "konsert", c: "音乐会", e: "concert", t: "noun" },
-            { u: "kun", c: "天/日", e: "day", t: "time" },
-            { u: "kundalik", c: "日常的/日记", e: "daily / diary", t: "adj" },
-            { u: "kunduz", c: "白天", e: "daytime", t: "time" },
-            { u: "kvartira", c: "公寓", e: "apartment", t: "place" },
-            { u: "maktab", c: "学校", e: "school", t: "place" },
-            { u: "mashina", c: "汽车", e: "car", t: "noun" },
-            { u: "mashina haydamoq", c: "开车", e: "to drive a car", t: "verb" },
-            { u: "milliy", c: "民族的/国家的", e: "national", t: "adj" },
-            { u: "mumtoz musiqa", c: "古典音乐", e: "classical music", t: "noun" },
-            { u: "Mustaqillik kuni", c: "独立日", e: "Independence Day", t: "noun" },
-            { u: "Navro'z", c: "纳吾肉孜节", e: "Navruz (New Year)", t: "noun" },
-            { u: "nishonlamoq", c: "庆祝", e: "to celebrate", t: "verb" },
-            { u: "nonushta qilmoq", c: "吃早餐", e: "to have breakfast", t: "verb" },
-            { u: "odatda", c: "通常", e: "usually", t: "time" },
-            { u: "ovqat pishirmoq", c: "做饭", e: "to cook", t: "verb" },
-            { u: "peshin", c: "中午", e: "noon / midday", t: "time" },
-            { u: "qachon", c: "什么时候", e: "when", t: "time" },
-            { u: "qaytmoq", c: "回来/返回", e: "to return", t: "verb" },
-            { u: "qilmoq", c: "做", e: "to do", t: "verb" },
-            { u: "qimmat", c: "贵", e: "expensive", t: "adj" },
-            { u: "qishloq", c: "村庄", e: "village", t: "place" },
-            { u: "qulay", c: "舒适/方便", e: "comfortable / convenient", t: "adj" },
-            { u: "saroy", c: "宫殿", e: "palace", t: "place" },
-            { u: "saylga chiqmoq", c: "去野餐/游玩", e: "to go for a walk/picnic", t: "verb" },
-            { u: "sevmoq", c: "爱", e: "to love", t: "verb" },
-            { u: "siyosat", c: "政治", e: "politics", t: "noun" },
-            { u: "soat nechada", c: "几点", e: "at what time", t: "time" },
-            { u: "sotib olmoq", c: "买", e: "to buy", t: "verb" },
-            { u: "sport", c: "运动", e: "sport", t: "noun" },
-            { u: "so'ng", c: "然后/之后", e: "after / then", t: "time" },
-            { u: "tanaffus", c: "休息/课间", e: "break / recess", t: "time" },
-            { u: "tanaffusga chiqmoq", c: "去休息", e: "to go on a break", t: "verb" },
-            { u: "tanimoq", c: "认识", e: "to recognize / know", t: "verb" },
-            { u: "taxminan", c: "大约", e: "approximately", t: "adj" },
-            { u: "tez-tez", c: "经常", e: "often", t: "time" },
-            { u: "tinglamoq", c: "听", e: "to listen", t: "verb" },
-            { u: "tugamoq", c: "结束", e: "to finish / end", t: "verb" },
-            { u: "tun", c: "夜晚", e: "night", t: "time" },
-            { u: "turmoq", c: "站/起床/住", e: "to stand / get up / stay", t: "verb" },
-            { u: "tushlik qilmoq", c: "吃午餐", e: "to have lunch", t: "verb" },
-            { u: "uch xonali", c: "三居室的", e: "three-room", t: "adj" },
-            { u: "uchrashmoq", c: "见面", e: "to meet", t: "verb" },
-            { u: "uxlamoq", c: "睡觉", e: "to sleep", t: "verb" },
-            { u: "uxlashga yotmoq", c: "去睡觉", e: "to go to bed", t: "verb" },
-            { u: "uyg'onmoq", c: "醒来", e: "to wake up", t: "verb" },
-            { u: "uy vazifasi", c: "家庭作业", e: "homework", t: "noun" },
-            { u: "xona", c: "房间", e: "room", t: "place" },
-            { u: "yaxshi ko'rmoq", c: "喜欢", e: "to like", t: "verb" },
-            { u: "yemoq", c: "吃", e: "to eat", t: "verb" },
-            { u: "yomon ko'rmoq", c: "讨厌/不喜欢", e: "to dislike / hate", t: "verb" },
-            { u: "yuvinmoq", c: "洗漱", e: "to wash oneself", t: "verb" },
-            { u: "o'qimoq", c: "读/学习", e: "to read / study", t: "verb" },
-            { u: "o'rganmoq", c: "学习(学会)", e: "to learn", t: "verb" },
-            { u: "o'tirish", c: "聚会/坐", e: "sitting / party", t: "noun" },
-            { u: "o'ynamoq", c: "玩", e: "to play", t: "verb" },
-            { u: "o'yin", c: "游戏", e: "game", t: "noun" },
-            { u: "O'zingizmisiz?", c: "是你吗？", e: "Is that you? / Are you alone?", t: "noun" },
-            { u: "shahmat", c: "国际象棋", e: "chess", t: "noun" },
-            { u: "chekmoq", c: "抽烟", e: "to smoke", t: "verb" },
-            { u: "Dushanba", c: "星期一", e: "Monday", t: "time" },
-            { u: "Seshanba", c: "星期二", e: "Tuesday", t: "time" },
-            { u: "Chorshanba", c: "星期三", e: "Wednesday", t: "time" },
-            { u: "Payshanba", c: "星期四", e: "Thursday", t: "time" },
-            { u: "Juma", c: "星期五", e: "Friday", t: "time" },
-            { u: "Shanba", c: "星期六", e: "Saturday", t: "time" },
-            { u: "Yakshanba", c: "星期日", e: "Sunday", t: "time" },
-            { u: "Yanvar", c: "一月", e: "January", t: "time" },
-            { u: "Fevral", c: "二月", e: "February", t: "time" },
-            { u: "Mart", c: "三月", e: "March", t: "time" },
-            { u: "Aprel", c: "四月", e: "April", t: "time" },
-            { u: "May", c: "五月", e: "May", t: "time" },
-            { u: "Iyun", c: "六月", e: "June", t: "time" },
-            { u: "Iyul", c: "七月", e: "July", t: "time" },
-            { u: "Avgust", c: "八月", e: "August", t: "time" },
-            { u: "Sentabr", c: "九月", e: "September", t: "time" },
-            { u: "Oktabr", c: "十月", e: "October", t: "time" },
-            { u: "Noyabr", c: "十一月", e: "November", t: "time" },
-            { u: "Dekabr", c: "十二月", e: "December", t: "time" }
-        ];
-
-        // Process Vocabulary
-        const vocabulary = rawVocab.map((item, idx) => ({
-            id: idx,
-            ...item,
-            iconPath: SVG[item.t] || SVG.noun
-        }));
-
-        // --- APP STATE ---
-        let currentView = 'flashcards';
-        let cardList = [...vocabulary];
-        let cardIndex = 0;
-        let isFlipped = false;
-        
-        let gameCards = [];
-        let firstSelection = null;
-        let gameScore = 0;
-        let matchedPairs = 0;
-
-        let quizList = [];
-        let quizIndex = 0;
-        let currentQuizItem = null;
-
-        // --- UTILS ---
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -422,271 +384,415 @@
             return array;
         }
 
-        // --- INITIALIZATION ---
-        window.onload = () => {
-            cardList = shuffleArray([...vocabulary]); // Shuffle on load
-            renderCard();
-            initGame();
-            initQuiz();
-        };
-
-        function switchView(viewId) {
-            // Hide all
-            document.getElementById('view-flashcards').classList.add('hidden');
-            document.getElementById('view-game').classList.add('hidden');
-            document.getElementById('view-quiz').classList.add('hidden');
-            document.getElementById('header-score').classList.add('hidden');
-            
-            // Deactivate nav
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'text-blue-600'));
-            
-            // Show Target
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            document.getElementById(`nav-${viewId}`).classList.add('active', 'text-blue-600');
-            
-            if(viewId === 'game') document.getElementById('header-score').classList.remove('hidden');
-
-            currentView = viewId;
-        }
-
-        // --- FLASHCARD LOGIC ---
-        function filterCards(cat) {
-            let filtered;
-            if (cat === 'all') filtered = [...vocabulary];
-            else filtered = vocabulary.filter(v => v.t === cat);
-            
-            // Visual feedback for buttons
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-white', 'text-gray-600');
-                if(btn.textContent.toLowerCase().includes(cat)) {
-                    btn.classList.remove('bg-white', 'text-gray-600');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                }
+        // --- TAB SWITCHING ---
+        function switchTab(tabId) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn px-6 py-2.5 rounded-full font-medium transition-all duration-300 bg-white/40 backdrop-blur-md text-gray-600 hover:bg-white/80 hover:text-indigo-600 shadow-sm border border-white/60 hover:-translate-y-0.5';
+                btn.dataset.tab = btn.getAttribute('data-tab');
             });
-
-            cardList = shuffleArray(filtered); // Shuffle whenever filtered
-            cardIndex = 0;
-            isFlipped = false;
-            document.getElementById('flashcard').classList.remove('is-flipped');
-            renderCard();
-        }
-
-        function renderCard() {
-            if (cardList.length === 0) return;
-            const item = cardList[cardIndex];
-            
-            document.getElementById('card-uzbek').innerText = item.u;
-            document.getElementById('card-chinese').innerText = item.c;
-            document.getElementById('card-english').innerText = item.e;
-            document.getElementById('card-cat').innerText = item.t.toUpperCase();
-            document.getElementById('card-counter').innerText = `${cardIndex + 1}/${cardList.length}`;
-            
-            // Render Icon
-            const iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.iconPath}</svg>`;
-            document.getElementById('card-icon').innerHTML = iconSvg;
-            document.getElementById('card-icon-sm').innerHTML = iconSvg;
-        }
-
-        function flipCard() {
-            const el = document.getElementById('flashcard');
-            isFlipped = !isFlipped;
-            el.classList.toggle('is-flipped', isFlipped);
-            
-            // Auto play audio on flip to back if not played recently (optional, keeping manual for now)
-        }
-
-        function nextCard() {
-            cardIndex = (cardIndex + 1) % cardList.length;
-            resetFlip();
-            setTimeout(renderCard, 150);
-        }
-
-        function prevCard() {
-            cardIndex = (cardIndex - 1 + cardList.length) % cardList.length;
-            resetFlip();
-            setTimeout(renderCard, 150);
-        }
-
-        function resetFlip() {
-            const el = document.getElementById('flashcard');
-            isFlipped = false;
-            el.classList.remove('is-flipped');
-        }
-
-        function speakWord(text) {
-            const word = text || cardList[cardIndex].u;
-            
-            // 1. 尝试使用 Google Translate TTS 在线服务 (更自然)
-            // 这里的 client=tw-ob 是公开可用的访问点
-            const onlineUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=uz&client=tw-ob&q=${encodeURIComponent(word)}`;
-            const audio = new Audio(onlineUrl);
-            
-            audio.play().catch(e => {
-                // 2. 如果在线播放失败 (离线或网络限制)，回退到系统发音
-                console.log("Online TTS failed, falling back to system.", e);
-                if ('speechSynthesis' in window) {
-                    const u = new SpeechSynthesisUtterance(word);
-                    // 尝试匹配土耳其语作为乌兹别克语的近似发音 (如果系统不支持 uz)
-                    const voices = window.speechSynthesis.getVoices();
-                    const tr = voices.find(v => v.lang.includes('tr'));
-                    if(tr) u.voice = tr;
-                    u.rate = 0.85;
-                    window.speechSynthesis.speak(u);
-                }
-            });
-        }
-
-        // --- GAME LOGIC ---
-        function initGame() {
-            const grid = document.getElementById('game-grid');
-            grid.innerHTML = '';
-            gameScore = 0;
-            matchedPairs = 0;
-            firstSelection = null;
-            document.getElementById('header-score').innerText = "Score: 0";
-
-            // Pick 6 random words (12 cards) for mobile screen space
-            const subset = [...vocabulary].sort(() => 0.5 - Math.random()).slice(0, 6);
-            let deck = [];
-            subset.forEach(item => {
-                deck.push({ id: item.id, content: item.u, type: 'u' }); // Uzbek
-                deck.push({ id: item.id, content: item.c, type: 'c' }); // Chinese
-            });
-            deck.sort(() => 0.5 - Math.random());
-
-            deck.forEach(card => {
-                const el = document.createElement('div');
-                el.className = 'game-card bg-white text-gray-800 font-bold border border-gray-200';
-                el.innerText = card.content;
-                if (card.type === 'c') el.classList.add('text-blue-600');
-                
-                el.onclick = () => handleGameClick(el, card);
-                grid.appendChild(el);
-            });
-        }
-
-        function handleGameClick(el, card) {
-            if (el.classList.contains('matched') || el.classList.contains('selected')) return;
-            
-            if (card.type === 'u') speakWord(card.content);
-
-            el.classList.add('selected');
-
-            if (!firstSelection) {
-                firstSelection = { el, card };
-            } else {
-                // Check match
-                if (firstSelection.card.id === card.id && firstSelection.card.type !== card.type) {
-                    // Match
-                    setTimeout(() => {
-                        el.classList.remove('selected');
-                        firstSelection.el.classList.remove('selected');
-                        el.classList.add('matched');
-                        firstSelection.el.classList.add('matched');
-                        firstSelection = null;
-                    }, 200);
-                    gameScore += 10;
-                    matchedPairs++;
-                    if(matchedPairs === 6) {
-                        setTimeout(() => {
-                            if(confirm('恭喜通关！再来一局？')) initGame();
-                        }, 500);
-                    }
-                } else {
-                    // Mismatch
-                    el.classList.add('wrong');
-                    firstSelection.el.classList.add('wrong');
-                    setTimeout(() => {
-                        el.classList.remove('selected', 'wrong');
-                        firstSelection.el.classList.remove('selected', 'wrong');
-                        firstSelection = null;
-                    }, 600);
-                    gameScore = Math.max(0, gameScore - 2);
-                }
-                document.getElementById('header-score').innerText = `Score: ${gameScore}`;
+            const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+            if(activeBtn) {
+                activeBtn.className = 'tab-btn active px-6 py-2.5 rounded-full font-semibold transition-all duration-300 bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] transform hover:-translate-y-0.5 border border-transparent';
+                activeBtn.dataset.tab = activeBtn.getAttribute('data-tab');
             }
+
+            // Update Content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
         }
 
-        // --- QUIZ LOGIC ---
-        function initQuiz() {
-            quizList = [...vocabulary].sort(() => 0.5 - Math.random()).slice(0, 10);
-            quizIndex = 0;
-            renderQuiz();
+        function renderFlashcards() {
+            const container = document.getElementById('flashcard-container');
+            container.innerHTML = '';
+
+            vocabulary.forEach((word, index) => {
+                const card = document.createElement('div');
+                card.className = 'w-full h-72 bg-transparent cursor-pointer perspective-1000 group';
+                
+                card.innerHTML = `
+                    <div class="flashcard relative w-full h-full text-center transition-transform transform-style-3d shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] rounded-3xl" onclick="this.classList.toggle('flipped')">
+                        <!-- Front of card -->
+                        <div class="absolute w-full h-full bg-white/70 backdrop-blur-2xl rounded-3xl backface-hidden flex flex-col justify-center items-center border border-white">
+                            <div class="text-6xl text-gray-800 mb-6 zh-text font-bold drop-shadow-sm">${word.hanzi}</div>
+                            <button onclick="playAudio('${word.hanzi}', event)" class="mt-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-500 hover:from-indigo-100 hover:to-purple-100 hover:text-indigo-700 w-12 h-12 rounded-full transition-all shadow flex items-center justify-center border border-white">
+                                <i class="fas fa-volume-up text-lg"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Back of card -->
+                        <div class="absolute w-full h-full bg-gradient-to-br from-indigo-600 to-purple-700 backdrop-blur-2xl rounded-3xl backface-hidden rotate-y-180 flex flex-col justify-center items-center p-5 border border-indigo-400 shadow-inner text-white">
+                            <div class="text-3xl font-bold mb-3 drop-shadow-md">${word.pinyin}</div>
+                            <div class="w-full h-px bg-white/20 my-3"></div>
+                            <div class="text-lg font-semibold text-center mb-2 leading-tight"><span class="text-[10px] text-indigo-200 mr-2 uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-full">UZ</span>${word.uz}</div>
+                            <div class="text-sm text-indigo-100 text-center mb-2"><span class="text-[10px] text-indigo-300 mr-2 uppercase tracking-widest">RU</span>${word.ru}</div>
+                            <div class="text-sm text-indigo-200 text-center italic"><span class="text-[10px] text-indigo-300 mr-2 uppercase tracking-widest font-sans">EN</span>${word.en}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
 
-        function renderQuiz() {
-            if (quizIndex >= quizList.length) {
-                // Quiz End
-                document.getElementById('quiz-question').innerText = "测试完成!";
-                document.getElementById('quiz-icon').innerHTML = '<svg class="w-full h-full text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
-                document.getElementById('quiz-options').innerHTML = `<button onclick="initQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">再测一次 Restart</button>`;
-                document.getElementById('quiz-next-btn').classList.add('hidden');
-                document.getElementById('quiz-feedback').classList.add('hidden');
+        let currentVocabQuiz = [];
+        function renderVocabQuiz() {
+            const container = document.getElementById('vocab-quiz-container');
+            container.innerHTML = '';
+            
+            currentVocabQuiz = shuffleArray([...vocabulary]).map(word => {
+                let options = [word.uz];
+                let pool = vocabulary.filter(w => w.hanzi !== word.hanzi).map(w => w.uz);
+                pool = shuffleArray(pool);
+                options.push(pool[0], pool[1], pool[2]);
+                return {
+                    question: word.hanzi,
+                    options: shuffleArray(options),
+                    answer: word.uz,
+                    selected: null
+                };
+            });
+
+            currentVocabQuiz.forEach((q, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'mb-10 pb-8 border-b border-gray-100/50 last:border-0';
+                qDiv.innerHTML = `
+                    <div class="flex items-center gap-4 mb-5">
+                        <span class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white w-9 h-9 flex justify-center items-center rounded-full font-bold shadow-md">${index + 1}</span>
+                        <h4 class="text-4xl font-bold text-gray-800 zh-text tracking-widest drop-shadow-sm">${q.question}</h4>
+                        <button onclick="playAudio('${q.question}', event)" class="text-indigo-400 hover:text-indigo-600 bg-white/50 w-10 h-10 rounded-full shadow-sm border border-white hover:bg-white transition-all"><i class="fas fa-volume-up"></i></button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-14" id="vq-options-${index}">
+                        ${q.options.map((opt, oIndex) => `
+                            <button onclick="selectVocabOption(${index}, ${oIndex}, this)" class="vocab-opt-btn text-left p-4 rounded-xl border-2 border-white/60 bg-white/40 hover:border-indigo-400 hover:bg-white transition-all font-medium text-gray-700 shadow-sm hover:shadow">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="vq-feedback-${index}" class="mt-4 pl-14 hidden font-medium text-lg"></div>
+                `;
+                container.appendChild(qDiv);
+            });
+            updateVocabScore();
+        }
+
+        function selectVocabOption(qIndex, optIndex, btnEl) {
+            if(currentVocabQuiz[qIndex].selected !== null) return;
+            
+            const q = currentVocabQuiz[qIndex];
+            const selectedText = q.options[optIndex];
+            q.selected = selectedText;
+            
+            const isCorrect = selectedText === q.answer;
+            const container = document.getElementById(`vq-options-${qIndex}`);
+            const feedback = document.getElementById(`vq-feedback-${qIndex}`);
+            
+            container.querySelectorAll('button').forEach(b => {
+                b.disabled = true;
+                b.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+            
+            btnEl.classList.remove('opacity-50', 'border-white/60', 'bg-white/40', 'hover:border-indigo-400', 'hover:bg-white');
+            
+            if(isCorrect) {
+                btnEl.classList.add('bg-green-50', 'border-green-400', 'text-green-800', 'shadow-md');
+                feedback.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2 text-xl"></i> Ajoyib! To'g'ri.`;
+                feedback.classList.remove('hidden', 'text-red-600');
+                feedback.classList.add('text-green-600', 'block');
+            } else {
+                btnEl.classList.add('bg-red-50', 'border-red-400', 'text-red-800', 'shadow-md');
+                feedback.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-2 text-xl"></i> Noto'g'ri. To'g'ri javob: <span class="font-bold ml-1">${q.answer}</span>`;
+                feedback.classList.remove('hidden', 'text-green-600');
+                feedback.classList.add('text-red-600', 'block');
+                
+                const allBtns = container.querySelectorAll('button');
+                allBtns.forEach((b, i) => {
+                    if(q.options[i] === q.answer) {
+                        b.classList.remove('opacity-50', 'border-white/60');
+                        b.classList.add('bg-green-50/70', 'border-green-400', 'text-green-800');
+                    }
+                });
+            }
+            updateVocabScore();
+        }
+
+        function updateVocabScore() {
+            const total = currentVocabQuiz.length;
+            const answered = currentVocabQuiz.filter(q => q.selected !== null);
+            const correct = answered.filter(q => q.selected === q.answer).length;
+            document.getElementById('vocab-score').innerText = `${correct} / ${total}`;
+        }
+
+        function renderDialogues() {
+            const container = document.getElementById('dialogues-container');
+            container.innerHTML = '';
+
+            dialogues.forEach(dialogue => {
+                const dDiv = document.createElement('div');
+                dDiv.className = 'glass-panel rounded-3xl overflow-hidden';
+                
+                let linesHTML = dialogue.lines.map(line => `
+                    <div class="p-6 border-b border-gray-100/30 hover:bg-white/40 transition-colors flex flex-col md:flex-row gap-5 group">
+                        <div class="md:w-1/4 shrink-0 pt-1 flex items-center justify-start md:justify-end gap-3">
+                            <span class="font-bold text-gray-700 md:text-right text-lg">${line.speaker}</span>
+                            <button onclick="playAudio('${line.hanzi}', event)" class="text-indigo-400 hover:text-indigo-600 bg-white/50 w-8 h-8 rounded-full shadow-sm border border-white md:hidden"><i class="fas fa-volume-up text-sm"></i></button>
+                        </div>
+                        <div class="md:w-3/4">
+                            <div class="flex items-center gap-4 mb-2">
+                                <p class="text-2xl font-medium zh-text text-gray-900 drop-shadow-sm">${line.hanzi}</p>
+                                <button onclick="playAudio('${line.hanzi}', event)" class="text-indigo-400 hover:text-indigo-600 bg-white/60 hover:bg-white w-9 h-9 rounded-full shadow-sm border border-white hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><i class="fas fa-volume-up text-sm"></i></button>
+                            </div>
+                            <p class="text-lg text-indigo-600 mb-3 font-semibold">${line.pinyin}</p>
+                            <p class="text-md text-gray-700 mb-1.5"><span class="font-bold text-indigo-400 text-[10px] mr-2 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded">UZ</span>${line.uz}</p>
+                            <p class="text-sm text-gray-600 mb-1.5"><span class="font-bold text-purple-400 text-[10px] mr-2 uppercase tracking-wider bg-purple-50 px-2 py-0.5 rounded">RU</span>${line.ru}</p>
+                            <p class="text-sm text-gray-400 italic"><span class="font-bold text-gray-300 text-[10px] mr-2 uppercase tracking-wider border border-gray-200 px-2 py-0.5 rounded">EN</span>${line.en}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                dDiv.innerHTML = `
+                    <div class="bg-gradient-to-r from-indigo-500/90 to-purple-600/90 backdrop-blur-md text-white py-4 px-6 text-xl font-bold shadow-sm">
+                        ${dialogue.title}
+                    </div>
+                    <div class="flex flex-col bg-white/30">
+                        ${linesHTML}
+                    </div>
+                `;
+                container.appendChild(dDiv);
+            });
+        }
+
+        function renderGrammar() {
+            const container = document.getElementById('grammar-container');
+            container.innerHTML = '';
+
+            grammarPoints.forEach(point => {
+                const div = document.createElement('div');
+                div.className = 'glass-panel rounded-3xl p-8 relative overflow-hidden';
+                
+                let examplesHTML = point.examples.map(ex => `
+                    <li class="mb-5 last:mb-0 pb-4 last:pb-0 border-b border-gray-200/50 last:border-0 relative">
+                        <div class="absolute left-0 top-3 w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
+                        <div class="pl-5">
+                            <div class="flex items-center gap-3 mb-1.5">
+                                <span class="zh-text text-gray-900 text-xl font-medium">${ex.hanzi}</span>
+                                <button onclick="playAudio('${ex.hanzi}', event)" class="text-indigo-400 hover:text-indigo-600 bg-white/50 w-7 h-7 rounded-full shadow-sm flex justify-center items-center"><i class="fas fa-volume-up text-xs"></i></button>
+                            </div>
+                            <div class="text-md text-indigo-600/80 mb-2 font-medium">${ex.pinyin}</div>
+                            <div class="text-sm text-gray-700 bg-white/40 px-3 py-1.5 rounded-lg border border-white inline-block shadow-sm">${ex.uz}</div>
+                        </div>
+                    </li>
+                `).join('');
+
+                div.innerHTML = `
+                    <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-indigo-400 to-purple-600"></div>
+                    <h4 class="text-2xl font-bold text-gray-900 mb-4 ml-4 drop-shadow-sm">${point.title}</h4>
+                    <p class="text-gray-800 mb-6 font-medium zh-text leading-relaxed ml-4 text-lg bg-white/40 p-4 rounded-xl border border-white">${point.hanzi}</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-sm bg-indigo-50/50 p-5 rounded-2xl border border-white ml-4 shadow-inner">
+                        <div><strong class="text-indigo-800 block mb-1.5 uppercase tracking-wider text-[11px] font-bold">O'zbekcha</strong><span class="text-gray-700">${point.uz}</span></div>
+                        <div><strong class="text-purple-800 block mb-1.5 uppercase tracking-wider text-[11px] font-bold">Русский</strong><span class="text-gray-700">${point.ru}</span></div>
+                        <div><strong class="text-gray-500 block mb-1.5 uppercase tracking-wider text-[11px] font-bold">English</strong><span class="text-gray-500 italic">${point.en}</span></div>
+                    </div>
+
+                    <div class="ml-4">
+                        <h5 class="font-bold text-gray-800 mb-4 flex items-center gap-2 text-lg"><i class="fas fa-lightbulb text-amber-500"></i> Misollar:</h5>
+                        <ul class="pl-1">
+                            ${examplesHTML}
+                        </ul>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        let currentGrammarQuiz = [];
+        function renderGrammarQuiz() {
+            const container = document.getElementById('grammar-quiz-container');
+            container.innerHTML = '';
+            
+            currentGrammarQuiz = grammarQuizData.map(q => ({...q, selected: null}));
+
+            currentGrammarQuiz.forEach((q, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'mb-10 pb-8 border-b border-gray-200/50 last:border-0';
+                
+                qDiv.innerHTML = `
+                    <div class="flex items-start gap-4 mb-5">
+                        <span class="bg-teal-100 text-teal-700 w-9 h-9 mt-1 flex justify-center items-center rounded-full font-bold shrink-0 shadow-sm border border-teal-200">${index + 1}</span>
+                        <h4 class="text-2xl font-medium text-gray-800 zh-text leading-relaxed drop-shadow-sm">${q.q}</h4>
+                    </div>
+                    <div class="flex flex-wrap gap-4 pl-13 md:pl-14" id="gq-options-${index}">
+                        ${q.options.map((opt, oIndex) => `
+                            <button onclick="selectGrammarOption(${index}, ${oIndex}, this)" class="grammar-opt-btn px-8 py-3 rounded-2xl border border-white/60 bg-white/50 hover:bg-teal-50 hover:border-teal-400 hover:text-teal-700 transition-all font-medium text-gray-700 zh-text text-lg shadow-sm hover:shadow">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="gq-feedback-${index}" class="mt-4 pl-13 md:pl-14 hidden font-medium text-lg"></div>
+                `;
+                container.appendChild(qDiv);
+            });
+            updateGrammarScore();
+        }
+
+        function selectGrammarOption(qIndex, optIndex, btnEl) {
+            if(currentGrammarQuiz[qIndex].selected !== null) return;
+            
+            const q = currentGrammarQuiz[qIndex];
+            q.selected = optIndex;
+            const isCorrect = optIndex === q.ans;
+            
+            const container = document.getElementById(`gq-options-${qIndex}`);
+            const feedback = document.getElementById(`gq-feedback-${qIndex}`);
+            
+            container.querySelectorAll('button').forEach(b => {
+                b.disabled = true;
+                b.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+            
+            btnEl.classList.remove('opacity-50', 'border-white/60', 'bg-white/50', 'hover:bg-teal-50', 'hover:border-teal-400', 'hover:text-teal-700');
+            
+            if(isCorrect) {
+                btnEl.classList.add('bg-green-50', 'border-green-400', 'text-green-700', 'shadow-md');
+                feedback.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> To'g'ri!`;
+                feedback.classList.remove('hidden', 'text-red-600');
+                feedback.classList.add('text-green-600', 'block');
+            } else {
+                btnEl.classList.add('bg-red-50', 'border-red-400', 'text-red-700', 'shadow-md');
+                feedback.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> Noto'g'ri.`;
+                feedback.classList.remove('hidden', 'text-green-600');
+                feedback.classList.add('text-red-600', 'block');
+                
+                const allBtns = container.querySelectorAll('button');
+                allBtns[q.ans].classList.remove('opacity-50', 'border-white/60', 'bg-white/50');
+                allBtns[q.ans].classList.add('bg-green-50/70', 'border-green-400', 'text-green-700');
+            }
+            updateGrammarScore();
+        }
+
+        function updateGrammarScore() {
+            const total = currentGrammarQuiz.length;
+            const answered = currentGrammarQuiz.filter(q => q.selected !== null);
+            const correct = answered.filter(q => q.selected === q.ans).length;
+            document.getElementById('grammar-score').innerText = `${correct} / ${total}`;
+        }
+
+        let currentFillQuiz = [];
+        let selectedWordForBlank = null;
+
+        function renderFillBlanks() {
+            const wordBankContainer = document.getElementById('word-bank');
+            const container = document.getElementById('fill-blanks-container');
+            
+            currentFillQuiz = fillBlanksData.map(q => ({...q, userAns: null, isCorrect: null}));
+            
+            wordBankContainer.innerHTML = wordBankList.map(word => `
+                <button onclick="selectWordFromBank('${word}', this)" class="word-chip px-5 py-2.5 bg-white/70 border border-white rounded-xl shadow-sm text-gray-700 font-bold zh-text hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none text-lg">
+                    ${word}
+                </button>
+            `).join('');
+
+            container.innerHTML = currentFillQuiz.map((q, index) => {
+                const parts = q.sentence.split('[blank]');
+                return `
+                    <div class="flex items-center gap-4 p-5 bg-white/40 rounded-2xl border border-white hover:shadow-md transition-all group">
+                        <span class="text-indigo-400 font-bold w-8 text-right text-lg">${index + 1}.</span>
+                        <div class="text-2xl zh-text text-gray-800 flex flex-wrap items-center gap-3 drop-shadow-sm">
+                            <span>${parts[0]}</span>
+                            <button id="blank-${index}" onclick="fillBlank(${index})" class="blank-spot inline-flex justify-center items-center min-w-[100px] h-12 border-b-2 border-dashed border-gray-400 bg-white/50 hover:bg-indigo-50/80 transition-colors font-bold text-indigo-700 cursor-pointer focus:outline-none rounded-t-lg px-4 shadow-inner">
+                            </button>
+                            <span>${parts[1]}</span>
+                        </div>
+                        <div id="fill-feedback-${index}" class="ml-auto w-10 text-center hidden"></div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateFillScore();
+        }
+
+        function selectWordFromBank(word, btnEl) {
+            document.querySelectorAll('.word-chip').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md');
+                btn.classList.add('bg-white/70', 'text-gray-700', 'border-white', 'shadow-sm');
+            });
+            btnEl.classList.remove('bg-white/70', 'text-gray-700', 'border-white', 'shadow-sm');
+            btnEl.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md');
+            selectedWordForBlank = word;
+        }
+
+        function fillBlank(index) {
+            if (!selectedWordForBlank) {
+                const q = currentFillQuiz[index];
+                if (q.userAns !== null) {
+                    q.userAns = null;
+                    q.isCorrect = null;
+                    const blankBtn = document.getElementById(`blank-${index}`);
+                    blankBtn.innerText = '';
+                    blankBtn.classList.remove('border-solid', 'border-green-400', 'border-red-400', 'text-green-700', 'text-red-700', 'bg-green-50', 'bg-red-50', 'shadow-sm');
+                    blankBtn.classList.add('border-dashed', 'border-gray-400', 'bg-white/50', 'shadow-inner');
+                    document.getElementById(`fill-feedback-${index}`).classList.add('hidden');
+                    updateFillScore();
+                }
                 return;
             }
 
-            currentQuizItem = quizList[quizIndex];
-            document.getElementById('quiz-question').innerText = currentQuizItem.u;
-            document.getElementById('quiz-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${currentQuizItem.iconPath}</svg>`;
-            document.getElementById('quiz-progress').style.width = `${((quizIndex)/10)*100}%`;
+            const q = currentFillQuiz[index];
+            q.userAns = selectedWordForBlank;
             
-            // Options (1 correct, 3 wrong)
-            const wrongOpts = vocabulary.filter(v => v.id !== currentQuizItem.id).sort(() => 0.5 - Math.random()).slice(0, 3);
-            const options = [currentQuizItem, ...wrongOpts].sort(() => 0.5 - Math.random());
+            let isCorrect = false;
+            let targetAns = q.answer;
+            if(targetAns === "色" && ["红色", "颜色", "白色"].includes(selectedWordForBlank)) isCorrect = true;
+            else if (targetAns === "绿" && selectedWordForBlank === "绿色") isCorrect = true;
+            else if (targetAns === "白" && selectedWordForBlank === "白色") isCorrect = true;
+            else if (targetAns === "黑色" && ["黑色","白色","红色","绿色"].includes(selectedWordForBlank)) isCorrect = true;
+            else if (targetAns === selectedWordForBlank) isCorrect = true;
+            
+            q.isCorrect = isCorrect;
 
-            const container = document.getElementById('quiz-options');
-            container.innerHTML = '';
-            document.getElementById('quiz-feedback').classList.add('hidden');
-            document.getElementById('quiz-next-btn').classList.add('hidden');
+            const blankBtn = document.getElementById(`blank-${index}`);
+            blankBtn.innerText = selectedWordForBlank;
+            blankBtn.classList.remove('border-dashed', 'border-gray-400', 'bg-white/50', 'text-indigo-700', 'shadow-inner');
+            blankBtn.classList.add('border-solid', 'shadow-sm');
 
-            // Auto speak
-            speakWord(currentQuizItem.u);
-
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl text-left font-semibold transition active:scale-98';
-                btn.innerHTML = `<div>${opt.c}</div><div class="text-xs text-gray-400 font-normal">${opt.e}</div>`;
-                btn.onclick = () => checkQuiz(btn, opt.id === currentQuizItem.id);
-                container.appendChild(btn);
-            });
-        }
-
-        function checkQuiz(btn, isCorrect) {
-            const btns = document.getElementById('quiz-options').children;
-            for(let b of btns) b.disabled = true;
-
-            const feedback = document.getElementById('quiz-feedback');
-            feedback.classList.remove('hidden');
-            document.getElementById('quiz-next-btn').classList.remove('hidden');
+            const feedbackDiv = document.getElementById(`fill-feedback-${index}`);
+            feedbackDiv.classList.remove('hidden');
 
             if (isCorrect) {
-                btn.classList.remove('bg-gray-50');
-                btn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
-                feedback.innerText = "✅ 回答正确! Correct!";
-                feedback.className = "mt-4 text-center font-bold text-sm text-green-600 bg-green-50 p-2 rounded";
-                playSound('correct'); 
+                blankBtn.classList.remove('border-red-400', 'text-red-700', 'bg-red-50');
+                blankBtn.classList.add('border-green-400', 'text-green-700', 'bg-green-50');
+                feedbackDiv.innerHTML = `<i class="fas fa-check-circle text-green-500 text-2xl drop-shadow-sm"></i>`;
             } else {
-                btn.classList.remove('bg-gray-50');
-                btn.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
-                feedback.innerText = `❌ 正确答案: ${currentQuizItem.c}`;
-                feedback.className = "mt-4 text-center font-bold text-sm text-red-600 bg-red-50 p-2 rounded";
-                playSound('wrong'); 
-
-                // Highlight correct one
-                for(let b of btns) {
-                    if (b.innerHTML.includes(currentQuizItem.c)) {
-                        b.classList.add('bg-green-100', 'border-green-500');
-                    }
-                }
+                blankBtn.classList.remove('border-green-400', 'text-green-700', 'bg-green-50');
+                blankBtn.classList.add('border-red-400', 'text-red-700', 'bg-red-50');
+                feedbackDiv.innerHTML = `<i class="fas fa-times-circle text-red-500 text-2xl drop-shadow-sm"></i>`;
             }
+
+            document.querySelectorAll('.word-chip').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md');
+                btn.classList.add('bg-white/70', 'text-gray-700', 'border-white', 'shadow-sm');
+            });
+            selectedWordForBlank = null;
+            
+            updateFillScore();
         }
 
-        function nextQuiz() {
-            quizIndex++;
-            renderQuiz();
+        function updateFillScore() {
+            const total = currentFillQuiz.length;
+            const correct = currentFillQuiz.filter(q => q.isCorrect === true).length;
+            document.getElementById('fill-score').innerText = `${correct} / ${total}`;
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFlashcards();
+            renderVocabQuiz();
+            renderDialogues();
+            renderGrammar();
+            renderGrammarQuiz();
+            renderFillBlanks();
+        });
     </script>
 </body>
 </html>
